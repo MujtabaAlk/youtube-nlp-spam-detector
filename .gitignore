@@ -1,0 +1,19 @@
+# virtual enviroment
+venv/
+env/
+.env
+
+# Python
+__pycache__/
+
+# Tests
+.tox/
+.pytest_cache/
+.mypy_cache/
+
+# Packaging
+*.egg-info/
+
+# Editor/IDE
+.vscode/
+.idea/
