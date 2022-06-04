@@ -1,3 +1,6 @@
+# Project secret files
+certificate.json
+
 # virtual enviroment
 venv/
 env/
