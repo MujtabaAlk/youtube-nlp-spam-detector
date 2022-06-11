@@ -1,4 +1,7 @@
-# virtual enviroment
+# Config file
+config.json
+
+# Virtual enviroment
 venv/
 env/
 .env
