@@ -7,6 +7,11 @@ import googleapiclient.errors
 from dotenv import load_dotenv
 
 from youtube_comment_collecter import constants
+from youtube_comment_collecter.api_resources.comment_thread_resource import (
+    CommentThreadListResponse,
+    CommentThreadResource,
+)
+from youtube_comment_collecter.video import Video
 
 
 def main() -> int:
@@ -20,16 +25,20 @@ def main() -> int:
         developerKey=developer_key,
     )
 
-    comment_thread_handler = youtube.commentThreads()
-    comment_thread_response = comment_thread_handler.list(
-        part="id,snippet,replies",
-        videoId="_VB39Jo8mAQ",
-        maxResults=100,
-        textFormat="plainText",
-    ).execute()
+    video = Video(id="_VB39Jo8mAQ")
 
-    comment_threads = []
-    comment_threads.extend(comment_thread_response.get("items"))
+    comment_thread_handler = youtube.commentThreads()
+    comment_thread_response: CommentThreadListResponse = (
+        comment_thread_handler.list(
+            part="id,snippet,replies",
+            videoId=video.id,
+            maxResults=100,
+            textFormat="plainText",
+        ).execute()
+    )
+
+    comment_threads: list[CommentThreadResource] = []
+    comment_threads.extend(comment_thread_response["items"])
 
     while comment_thread_response.get("nextPageToken") is not None:
         next_page_token = comment_thread_response.get("nextPageToken")
@@ -41,14 +50,18 @@ def main() -> int:
             pageToken=next_page_token,
         ).execute()
 
-        comment_threads.extend(comment_thread_response.get("items"))
+        comment_threads.extend(comment_thread_response["items"])
 
-    for thread in comment_threads:
-        comment_snip = (
-            thread.get("snippet").get("topLevelComment").get("snippet")
-        )
-        print(comment_snip.get("textDisplay"))
-        print("*" * 88)
+    for i, thread in enumerate(comment_threads):
+        comment_snip = thread["snippet"]["topLevelComment"]["snippet"]
+        if comment_snip["likeCount"] > 0:
+
+            print(
+                f"[{i}] [likes: {comment_snip['likeCount']}] [published at:"
+                f" {comment_snip['publishedAt']}]"
+            )
+            print(comment_snip["textOriginal"])
+            print("*" * 120)
 
     return 0
 
