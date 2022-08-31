@@ -12,6 +12,7 @@ from youtube_comment_collecter.api_resources.comment_thread_resource import (
     CommentThreadListResponse,
     CommentThreadResource,
 )
+from youtube_comment_collecter.api_resources.error import ErrorResponse
 
 
 async def async_main(video_id: str) -> int:
@@ -33,6 +34,16 @@ async def async_main(video_id: str) -> int:
             url=constants.THREADS_API_URL,
             params=request_params,
         )
+
+        if response.status_code != 200:
+            print("Unable to retrive comments")
+            print(f"Error code: {response.status_code}")
+            print("*" * 25)
+            print("API error:")
+            error_response: ErrorResponse = response.json()
+            print(error_response["error"]["message"])
+            return len(error_response["error"]["errors"])
+
         comment_thread_response: CommentThreadListResponse = response.json()
         comment_threads.extend(comment_thread_response["items"])
 
