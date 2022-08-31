@@ -18,7 +18,6 @@ async def async_main(video_id: str) -> int:
     load_dotenv()
 
     developer_key = os.environ[constants.GOOGLE_APPLICATION_API_KEY_ENV]
-    api_url = "https://www.googleapis.com/youtube/v3/commentThreads"
 
     comment_threads: list[CommentThreadResource] = list()
     async with httpx.AsyncClient() as client:
@@ -31,7 +30,7 @@ async def async_main(video_id: str) -> int:
             "pageToken": "",
         }
         response = await client.get(
-            url=api_url,
+            url=constants.THREADS_API_URL,
             params=request_params,
         )
         comment_thread_response: CommentThreadListResponse = response.json()
@@ -42,7 +41,9 @@ async def async_main(video_id: str) -> int:
             request_params["pageToken"] = (
                 next_page_token if next_page_token is not None else ""
             )
-            response = await client.get(url=api_url, params=request_params)
+            response = await client.get(
+                url=constants.THREADS_API_URL, params=request_params
+            )
             comment_thread_response = response.json()
             comment_threads.extend(comment_thread_response["items"])
 
