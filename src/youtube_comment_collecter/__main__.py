@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from argparse import ArgumentParser
 import asyncio
 import os
 
@@ -13,12 +14,11 @@ from youtube_comment_collecter.api_resources.comment_thread_resource import (
 )
 
 
-async def main() -> int:
+async def async_main(video_id: str) -> int:
     load_dotenv()
 
     developer_key = os.environ[constants.GOOGLE_APPLICATION_API_KEY_ENV]
     api_url = "https://www.googleapis.com/youtube/v3/commentThreads"
-    video_id = "_VB39Jo8mAQ"
 
     comment_threads: list[CommentThreadResource] = list()
     async with httpx.AsyncClient() as client:
@@ -62,5 +62,17 @@ async def main() -> int:
     return 0
 
 
+def main() -> int:
+    parser = ArgumentParser()
+    parser.add_argument(
+        "video_id",
+        help="ID of the video to collect comments from",
+        type=str,
+    )
+    args = parser.parse_args()
+
+    return asyncio.run(async_main(args.video_id))
+
+
 if __name__ == "__main__":
-    raise SystemExit(asyncio.run(main()))
+    raise SystemExit(main())
