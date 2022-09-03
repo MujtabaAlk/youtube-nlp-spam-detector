@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Optional
 from typing import TypedDict
 
 
@@ -19,7 +20,7 @@ class _Snippet(TypedDict):
     videoId: str
     textDisplay: str
     textOriginal: str
-    parentId: str
+    parentId: Optional[str]
     canRate: bool
     viewerRating: str
     likeCount: int
