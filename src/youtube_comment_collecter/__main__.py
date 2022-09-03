@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import httpx
 
 from youtube_comment_collecter import constants
+from youtube_comment_collecter.comment_thread import CommentThread
 from youtube_comment_collecter.api_resources.comment_thread_resource import (
     CommentThreadListResponse,
     CommentThreadResource,
@@ -20,7 +21,7 @@ async def async_main(video_id: str) -> int:
 
     developer_key = os.environ[constants.GOOGLE_APPLICATION_API_KEY_ENV]
 
-    comment_threads: list[CommentThreadResource] = list()
+    comment_threads_resources: list[CommentThreadResource] = list()
     async with httpx.AsyncClient() as client:
         request_params: dict[str, str | int | bool] = {
             "key": developer_key,
@@ -45,7 +46,7 @@ async def async_main(video_id: str) -> int:
             return len(error_response["error"]["errors"])
 
         comment_thread_response: CommentThreadListResponse = response.json()
-        comment_threads.extend(comment_thread_response["items"])
+        comment_threads_resources.extend(comment_thread_response["items"])
 
         while comment_thread_response.get("nextPageToken") is not None:
             next_page_token = comment_thread_response.get("nextPageToken")
@@ -56,20 +57,32 @@ async def async_main(video_id: str) -> int:
                 url=constants.THREADS_API_URL, params=request_params
             )
             comment_thread_response = response.json()
-            comment_threads.extend(comment_thread_response["items"])
+            comment_threads_resources.extend(comment_thread_response["items"])
 
-    for i, thread in enumerate(comment_threads):
+    comment_thread_list: list[
+        CommentThread
+    ] = CommentThread.list_from_youtube_api(comment_threads_resources)
+
+    for i, thread in enumerate(comment_threads_resources):
         comment_snippent = thread["snippet"]["topLevelComment"]["snippet"]
+        replies = thread.get("replies")
+        reply_count = 0
+        if replies is not None:
+            reply_count = len(replies["comments"])
+
         if comment_snippent["likeCount"] > 0:
             print(
-                f"[{i}] [likes: {comment_snippent['likeCount']}] [published"
-                f" at: {comment_snippent['publishedAt']}]"
+                f"[{i}] [likes: {comment_snippent['likeCount']}] [replies:"
+                f" {reply_count}] [published at:"
+                f" {comment_snippent['publishedAt']}]"
             )
             print(comment_snippent["textOriginal"])
         else:
             print("Skipping!!!")
 
         print("*" * 120)
+
+    print(f"Generated {len(comment_thread_list)} CommentThread objects")
 
     return 0
 
