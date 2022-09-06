@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from youtube_comment_collecter.comment import Comment
+from youtube_comment_collecter.data.comment import Comment
 from youtube_comment_collecter.api_resources.comment_resource import (
     CommentResource,
 )

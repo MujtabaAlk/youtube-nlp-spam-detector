@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
 
-from youtube_comment_collecter.comment_thread import CommentThread
+from youtube_comment_collecter.data.comment_thread import CommentThread
 
 
 @dataclass

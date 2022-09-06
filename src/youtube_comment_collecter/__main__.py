@@ -11,13 +11,13 @@ from youtube_comment_collecter import constants
 from youtube_comment_collecter.api_resources.video_resource import (
     VideoListResponse,
 )
-from youtube_comment_collecter.comment_thread import CommentThread
 from youtube_comment_collecter.api_resources.comment_thread_resource import (
     CommentThreadListResponse,
     CommentThreadResource,
 )
 from youtube_comment_collecter.api_resources.error import ErrorResponse
-from youtube_comment_collecter.video import Video
+from youtube_comment_collecter.data.comment_thread import CommentThread
+from youtube_comment_collecter.data.video import Video
 
 
 async def async_main(video_id: str) -> int:
