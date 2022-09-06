@@ -10,4 +10,5 @@ from youtube_comment_collecter.comment_thread import CommentThread
 class Video:
     id: str
     title: str = field(default_factory=str)
+    description: str = field(default_factory=str)
     comment_threads: list[CommentThread] = field(default_factory=list)
