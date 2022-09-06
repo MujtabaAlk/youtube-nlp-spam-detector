@@ -14,15 +14,22 @@ class Video(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     youtube_id = Column(String, nullable=False, unique=True)
+    title = Column(String, nullable=False)
 
     def __init__(
-        self, *args: tuple[Any], youtube_id: str, **kwargs: dict[str, Any]
+        self,
+        *args: tuple[Any],
+        youtube_id: str,
+        title: str,
+        **kwargs: dict[str, Any],
     ) -> None:
         self.youtube_id = youtube_id
+        self.title = title
 
         super().__init__(*args, **kwargs)
 
     def __repr__(self) -> str:
         return (
-            f"[{self.id}]{type(self).__name__}(youtube_id={self.youtube_id!r})"
+            f"[{self.id}]{type(self).__name__}(youtube_id={self.youtube_id!r},"
+            f" title={self.title!r})"
         )
