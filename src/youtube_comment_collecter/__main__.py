@@ -8,12 +8,16 @@ from dotenv import load_dotenv
 import httpx
 
 from youtube_comment_collecter import constants
+from youtube_comment_collecter.api_resources.video_resource import (
+    VideoListResponse,
+)
 from youtube_comment_collecter.comment_thread import CommentThread
 from youtube_comment_collecter.api_resources.comment_thread_resource import (
     CommentThreadListResponse,
     CommentThreadResource,
 )
 from youtube_comment_collecter.api_resources.error import ErrorResponse
+from youtube_comment_collecter.video import Video
 
 
 async def async_main(video_id: str) -> int:
@@ -23,6 +27,31 @@ async def async_main(video_id: str) -> int:
 
     comment_threads_resources: list[CommentThreadResource] = list()
     async with httpx.AsyncClient() as client:
+        video_request_params: dict[str, str | int | bool] = {
+            "key": developer_key,
+            "id": video_id,
+            "part": "id,snippet,statistics",
+        }
+
+        response = await client.get(
+            url=constants.VIDEO_API_URL,
+            params=video_request_params,
+        )
+
+        if response.status_code != 200:
+            print("Unable to retrive comments")
+            print(f"Error code: {response.status_code}")
+            print("*" * 25)
+            print("API error:")
+            error_response: ErrorResponse = response.json()
+            print(error_response["error"]["message"])
+            return len(error_response["error"]["errors"])
+
+        video_response: VideoListResponse = response.json()
+        if len(video_response["items"]) == 0:
+            print(f"No video found with id: {video_id}")
+            return 1
+
         request_params: dict[str, str | int | bool] = {
             "key": developer_key,
             "videoId": video_id,
@@ -41,7 +70,7 @@ async def async_main(video_id: str) -> int:
             print(f"Error code: {response.status_code}")
             print("*" * 25)
             print("API error:")
-            error_response: ErrorResponse = response.json()
+            error_response = response.json()
             print(error_response["error"]["message"])
             return len(error_response["error"]["errors"])
 
@@ -59,6 +88,7 @@ async def async_main(video_id: str) -> int:
             comment_thread_response = response.json()
             comment_threads_resources.extend(comment_thread_response["items"])
 
+    video_resource = video_response["items"][0]
     comment_thread_list: list[
         CommentThread
     ] = CommentThread.list_from_youtube_api(comment_threads_resources)
@@ -81,6 +111,19 @@ async def async_main(video_id: str) -> int:
             print("Skipping!!!")
 
         print("*" * 120)
+
+    video_obj = Video(
+        id=video_resource["id"],
+        title=video_resource["snippet"]["title"],
+        description=video_resource["snippet"]["description"],
+        comment_threads=comment_thread_list,
+    )
+
+    print(
+        f'Obtained comments for "{video_obj.title}", with id: "{video_obj.id}"'
+    )
+    # print("video description:")
+    # print(f"    {video_obj.description}")
 
     print(f"Generated {len(comment_thread_list)} CommentThread objects")
 
