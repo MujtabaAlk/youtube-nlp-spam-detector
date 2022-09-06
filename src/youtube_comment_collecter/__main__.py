@@ -20,6 +20,16 @@ from youtube_comment_collecter.data.comment_thread import CommentThread
 from youtube_comment_collecter.data.video import Video
 
 
+def handle_response_error(response: httpx.Response) -> int:
+    print("Unable to retrive comments")
+    print(f"Error code: {response.status_code}")
+    print("*" * 32)
+    print("API error:")
+    error_response: ErrorResponse = response.json()
+    print(error_response["error"]["message"])
+    return len(error_response["error"]["errors"])
+
+
 async def async_main(video_id: str) -> int:
     load_dotenv()
 
@@ -39,13 +49,7 @@ async def async_main(video_id: str) -> int:
         )
 
         if response.status_code != 200:
-            print("Unable to retrive comments")
-            print(f"Error code: {response.status_code}")
-            print("*" * 25)
-            print("API error:")
-            error_response: ErrorResponse = response.json()
-            print(error_response["error"]["message"])
-            return len(error_response["error"]["errors"])
+            return handle_response_error(response)
 
         video_response: VideoListResponse = response.json()
         if len(video_response["items"]) == 0:
@@ -66,13 +70,7 @@ async def async_main(video_id: str) -> int:
         )
 
         if response.status_code != 200:
-            print("Unable to retrive comments")
-            print(f"Error code: {response.status_code}")
-            print("*" * 25)
-            print("API error:")
-            error_response = response.json()
-            print(error_response["error"]["message"])
-            return len(error_response["error"]["errors"])
+            return handle_response_error(response)
 
         comment_thread_response: CommentThreadListResponse = response.json()
         comment_threads_resources.extend(comment_thread_response["items"])
@@ -85,6 +83,10 @@ async def async_main(video_id: str) -> int:
             response = await client.get(
                 url=constants.THREADS_API_URL, params=request_params
             )
+
+            if response.status_code != 200:
+                return handle_response_error(response)
+
             comment_thread_response = response.json()
             comment_threads_resources.extend(comment_thread_response["items"])
 
