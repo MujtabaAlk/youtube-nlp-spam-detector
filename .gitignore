@@ -1,5 +1,6 @@
-# Config file
+# Project Config & secret files
 config.json
+certificate.json
 
 # Virtual enviroment
 venv/
